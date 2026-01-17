@@ -1,17 +1,16 @@
 import pandas as pd
 from thefuzz import process
 
-
 try:
-    
     df = pd.read_csv(r'F:\pybls\formatted_medicines_v3.csv')
     
     df = df.drop_duplicates(subset=['brand_name'], keep='first')
     
     medicines = df.set_index('brand_name').to_dict('index')
     print(f"--- Database Loaded: {len(medicines)} items found ---")
+
 except FileNotFoundError:
-    print("Error: 'formatted_medicines_v2.csv' not found. Run your processing script first.")
+    print("Error: CSV file not found. Please run your processing script first.")
     exit()
 
 while True:
@@ -38,16 +37,12 @@ while True:
             data = medicines[best_match]
             current_price = data['price']
             generic = data['generic_name']
-            cheapest_ref = data['cheapest_brand_ref']
 
             print(f"\n✅ PRODUCT: {best_match}")
             print(f"💰 PRICE:   ৳{current_price:.2f}")
-            if not pd.isna(cheapest_ref):
-                print(f"ℹ️  Lowest Price Brand: {cheapest_ref}")
-            
             print(f"🧬 GENERIC: {generic}")
 
-            alternatives = df[(df['generic_name'] == generic) & (df['brand_name'] != best_match)]
+            alternatives = df[df['generic_name'] == generic]
             
             if not alternatives.empty:
                 cheapest_row = alternatives.loc[alternatives['price'].idxmin()]
@@ -57,13 +52,19 @@ while True:
                 if cheapest_price < current_price:
                     savings = current_price - cheapest_price
                     print(f"\n💡 SAVINGS TIP:")
-                    print(f"   You could save ৳{savings:.2f} by choosing:")
-                    print(f"   -> {cheapest_name} (৳{cheapest_price:.2f})")
+                    print(f"   Switch to: {cheapest_name} (৳{cheapest_price:.2f})")
+                    print(f"   You save:  ৳{savings:.2f}")
+                
+                elif best_match.lower() == generic.lower():
+                     print(f"\nℹ️  Ask the pharmacist for: {cheapest_name}")
+                     print(f"   (This is the brand with the lowest price: ৳{cheapest_price:.2f})")
+
                 else:
-                    print("\nℹ️ You are already looking at the cheapest option for this generic.")
+                    print(f"\n✅ Great choice! {best_match} is the cheapest option.")
             else:
-                print("\nℹ️ No other brands found for this generic formula.")
+                print("\nℹ️ No other brands found for this generic.")
+
         else:
-            print("❌ Could not find a matching medicine. Try including the mg.")
+            print("❌ Could not find a matching medicine. Try including the strength (mg).")
     else:
         print("❌ Search failed.")
