@@ -8,7 +8,7 @@ st.markdown("Find the best prices for your medications and discover cheaper alte
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv(r'F:\pybls\formatted_medicines_v3.csv')
+    df = pd.read_csv(r'F:\pybls\csv files\formatted_medicines_v3.csv')
     df_clean = df.drop_duplicates(subset=['brand_name'], keep='first')
     return df, df_clean.set_index('brand_name').to_dict('index')
 
